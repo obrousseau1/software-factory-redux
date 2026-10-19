@@ -1,0 +1,189 @@
+{
+  "testGlobs": [
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*_test.*",
+    "**/test_*.py",
+    "**/conftest.py",
+    "**/__tests__/**",
+    "**/__snapshots__/**",
+    "**/test/**",
+    "**/tests/**",
+    "**/testdata/**",
+    "**/fixtures/**",
+    "**/*.*Tests/**"
+  ],
+  "steps": [
+    "define-intent",
+    "define-specs",
+    "plan-and-shred",
+    "yoda-architect",
+    "build",
+    "ship"
+  ],
+  "profiles": {
+    "define-intent": {
+      "write": [
+        ".factory/*/intent.md"
+      ],
+      "shell": [
+        "git log",
+        "git show",
+        "git diff",
+        "git status",
+        "git blame",
+        "gh issue view",
+        "gh pr view"
+      ]
+    },
+    "define-specs": {
+      "write": [
+        ".factory/*/spec.md"
+      ],
+      "shell": [
+        "git log",
+        "git show",
+        "git diff",
+        "git status",
+        "git blame",
+        "gh issue view",
+        "gh pr view"
+      ]
+    },
+    "plan-and-shred": {
+      "write": [
+        ".factory/*/plan.md"
+      ],
+      "shell": [
+        "git log",
+        "git show",
+        "git diff",
+        "git status",
+        "git blame",
+        "gh issue view",
+        "gh pr view"
+      ]
+    },
+    "yoda-architect": {
+      "write": [
+        ".factory/*/spec.md",
+        ".factory/*/plan.md"
+      ],
+      "shell": [
+        "git log",
+        "git show",
+        "git diff",
+        "git status",
+        "git blame",
+        "gh issue view",
+        "gh pr view"
+      ]
+    },
+    "build": {
+      "write": [
+        ".factory/*/plan.md",
+        ".factory/*/spec.md",
+        ".factory/build-lock.json",
+        ".factory/lessons-inbox.json"
+      ],
+      "shell": [
+        "*"
+      ],
+      "shellDeny": [
+        "git push",
+        "gh pr create",
+        "gh pr merge",
+        "git reset --hard"
+      ],
+      "defer": [
+        "luke-builder",
+        "leia-fixer",
+        "threepio-spec",
+        "chewie-security",
+        "artoo-ux"
+      ]
+    },
+    "ship": {
+      "write": [
+        ".factory/*/ship.md",
+        ".factory/lessons-inbox.json"
+      ],
+      "shell": [
+        "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/lessons.mjs\" record",
+        "git log",
+        "git show",
+        "git diff",
+        "git status",
+        "git blame",
+        "git rev-parse",
+        "git merge-base",
+        "gh pr view",
+        "gh pr list"
+      ]
+    },
+    "luke-builder": {
+      "write": [
+        "**"
+      ],
+      "deny": [
+        ".factory/**"
+      ],
+      "shell": [
+        "*"
+      ],
+      "shellDeny": [
+        "git push",
+        "gh pr",
+        "git reset --hard",
+        "git rebase",
+        "git commit --amend",
+        "git switch",
+        "git branch",
+        "git add -A",
+        "git add --all",
+        "git add .",
+        "git commit -a",
+        "git commit -am"
+      ]
+    },
+    "leia-fixer": {
+      "write": [
+        "**"
+      ],
+      "deny": [
+        "@tests",
+        ".factory/**"
+      ],
+      "shell": [
+        "*"
+      ],
+      "shellDeny": [
+        "git push",
+        "gh pr",
+        "git reset --hard",
+        "git rebase",
+        "git commit --amend",
+        "git switch",
+        "git branch",
+        "git add -A",
+        "git add --all",
+        "git add .",
+        "git commit -a",
+        "git commit -am",
+        "git reset",
+        "git stash"
+      ]
+    },
+    "reviewer": {
+      "write": [],
+      "shell": [
+        "git diff",
+        "git log",
+        "git show",
+        "git status",
+        "git blame",
+        "git ls-files"
+      ]
+    }
+  }
+}
