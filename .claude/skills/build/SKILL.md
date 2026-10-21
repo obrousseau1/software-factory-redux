@@ -104,7 +104,8 @@ Never rebuild over it.
 **Create the branch.** The base depends on where S-(n-1) stands:
 
 - **S-1, or the S-(n-1) PR is merged.** Run `git fetch`, then
-  `git checkout -b <taskId>/S-n origin/<default-branch>`.
+  `git checkout -b <taskId>/S-n --no-track origin/<default-branch>`. Without `--no-track` the
+  branch tracks the default branch, and a push lands there instead of opening a PR branch.
 - **The S-(n-1) PR is still open.** Run `git checkout -b <taskId>/S-n <taskId>/S-(n-1)`. This
   stacks S-n on S-(n-1), because S-n may depend on it. Tell the user that the PR for S-n
   will target `<taskId>/S-(n-1)` until S-(n-1) merges.
