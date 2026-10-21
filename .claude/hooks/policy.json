@@ -110,6 +110,7 @@
       ],
       "shell": [
         "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/lessons.mjs\" record",
+        "node \"$HOME/.claude/hooks/lessons.mjs\" record",
         "git log",
         "git show",
         "git diff",

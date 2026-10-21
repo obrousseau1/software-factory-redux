@@ -119,6 +119,7 @@ const cases = [
   ["allow", "the lessons inbox", "ship", write(".factory/lessons-inbox.json")],
   ["block", "lessons.json directly (only the script writes it)", "ship", write(".factory/lessons.json")],
   ["allow", "recording the lessons", "ship", bash('node "$CLAUDE_PROJECT_DIR/.claude/hooks/lessons.mjs" record .factory/lessons-inbox.json')],
+  ["allow", "recording the lessons from a ~/.claude install", "ship", bash('node "$HOME/.claude/hooks/lessons.mjs" record .factory/lessons-inbox.json')],
   ["block", "re-rendering is not ship's", "ship", bash('node "$CLAUDE_PROJECT_DIR/.claude/hooks/lessons.mjs" render')],
 
   // builder: writes anything outside .factory, never pushes
