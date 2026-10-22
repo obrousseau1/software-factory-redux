@@ -72,6 +72,40 @@ test("a call made inside a subagent leaves the marker alone", () => {
   assert.equal(marker().step, "build");
 });
 
+// step.mjs: the usage log
+
+const logged = () => readFileSync(path.join(project, ".factory", "usage-log.jsonl"), "utf8").trim().split("\n").map(line => JSON.parse(line));
+
+test("a step start is logged with its task and shred", () => {
+  mkdirSync(path.join(project, ".factory", "OB-27"));
+  spawn("step.mjs", [], { ...skill("build"), tool_input: { skill: "build", args: "OB-27 S-2" }, transcript_path: "t.jsonl" });
+  const [event] = logged();
+  assert.equal(event.step, "build");
+  assert.equal(event.taskId, "OB-27");
+  assert.equal(event.shred, "S-2");
+  assert.equal(event.transcript_path, "t.jsonl");
+});
+
+test("the architect's task comes from its prompt", () => {
+  mkdirSync(path.join(project, ".factory", "OB-27"));
+  spawn("step.mjs", [], { ...agent("yoda-architect"), tool_input: { subagent_type: "yoda-architect", prompt: "Task OB-27: read .factory/OB-27/intent.md, S-1 too" } });
+  const [event] = logged();
+  assert.equal(event.taskId, "OB-27");
+  assert.equal(event.shred, undefined);
+});
+
+test("/hyperspace is logged but does not move the marker", () => {
+  setMarker("build");
+  spawn("step.mjs", [], { hook_event_name: "UserPromptExpansion", command_name: "/hyperspace" });
+  assert.equal(logged()[0].step, "hyperspace");
+  assert.equal(marker().step, "build");
+});
+
+test("a non-step skill is not logged", () => {
+  spawn("step.mjs", [], skill("simplify"));
+  assert.equal(existsSync(path.join(project, ".factory", "usage-log.jsonl")), false);
+});
+
 test("malformed input exits 0 and writes nothing", () => {
   const result = spawnSync(process.execPath, [path.join(hooksDir, "step.mjs")], {
     input: "not json",

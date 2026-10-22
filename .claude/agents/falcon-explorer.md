@@ -41,7 +41,8 @@ one line.
 more than two components.>
 
 ### Existing patterns / similar features
-<How the codebase already handles comparable cases, with paths.>
+<How the codebase already handles comparable cases, with paths. The area's conventions:
+naming, folder layout, test framework and how tests are named.>
 
 ### Blast radius
 <Other callers, shared code, persisted data, or config this area touches.>
@@ -51,12 +52,18 @@ more than two components.>
 
 ### What the code can't tell you
 <What would need runtime data, logs, production config, or a person to answer.>
+
+### Answers to the brief
+- <each question the caller asked, in its words> — <the answer, with `path:line`, or
+  "not found — searched <what>">
 ```
 
 ## Rules
 
 - **Read-only.** Never edit a file and never run a command that changes state.
-- **At most 400 words.** The caller has a conversation to run; give it a map, not a tour.
+- **At most 400 words**, *Answers to the brief* aside. The caller has a conversation to
+  run; give it a map, not a tour.
+- **Answer every question asked.** None skipped, none merged into another section.
 - **Exact paths.** Every claim about the code cites `path:line` as it appears in the repo.
   Never cite a path you did not open.
 - **Say when you are unsure.** "Looks like X is only called from Y — did not check

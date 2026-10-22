@@ -69,7 +69,9 @@ Raise it with the user; do not quietly plan around it.
 
 ## 2. Propose approaches — the first gate
 
-Lay out **two or three** candidate approaches. For each, one short block:
+Lay out **two or three** candidate approaches. The first keeps the current architecture
+and is the smallest change that meets every requirement. Offer a broader one only when a
+current requirement pays for its extra cost. For each, one short block:
 
 - **Shape** — what changes, in a sentence.
 - **Touches** — the files or seams, with paths from the map.
@@ -95,6 +97,27 @@ Then name what this approach makes fragile:
 Both are about **this change**, not the codebase in general. "The store has no tests" is
 background; "this diff is the third caller of a method whose other two callers assume it
 never returns null" is a finding.
+
+List the **behaviour to preserve**: the few things users rely on today that this approach
+could break, such as the intent's *Workaround today* or another caller's contract. Each item
+names the existing test that pins it, or a task adds a test that pins it.
+
+Then draft its **design**. It always starts with the reuse table, built from the map:
+
+| Concern | Existing solution | Decision | Requirement |
+|---|---|---|---|
+| Route ids | `src/Shared/IdParser.cs` | reuse | R-2 |
+
+*Decision* is only `reuse`, `modify`, `delete` or `new`. Every `new` names the current
+requirement that needs it. A future or hypothetical consumer does not count; drop the row
+and the concept.
+
+If the approach touches a data model, a schema, a public contract or a layer boundary, add:
+
+- **Model** — entities and value objects, their fields, types and validation rules.
+- **Contracts** — each endpoint or message: method, path, request, response.
+- **Errors** — each failure case, designed away or returned as a value. Name the type.
+- **Trust seam** — where untrusted input is parsed into domain types, with the path.
 
 ## 3. Give every requirement its test
 
@@ -131,7 +154,8 @@ one does not apply, keep it and say why in its description.
 4. **Complexity is low** — see below.
 5. **As lean as possible** — the diff contains nothing the requirements did not ask for:
    no speculative abstraction, no config for a value that never changes, no interface
-   with one implementation, no dependency added for what a few lines would do.
+   with one implementation, no dependency added for what a few lines would do, no shared
+   infrastructure unless two current consumers need it.
 
 ### The complexity gate
 
@@ -145,13 +169,13 @@ shape. Pick the one or two that fit the change:
 
 If the chosen approach is still complex after an honest simplification pass, do not
 quietly accept it and do not force a rewrite. Add a condition that **flags the task for
-a roundtable review with `/local-review --deep`**, naming what stayed complex and why
+a review with `/ponytail:ponytail-review`**, naming what stayed complex and why
 simplification failed:
 
 ```json
 {
   "id": "EC-<next>",
-  "description": "Roundtable review required: run local-review --deep after implementation because <specific complexity and failed simplification>.",
+  "description": "Complexity review required: run /ponytail:ponytail-review on the shred's diff after implementation because <specific complexity and failed simplification>.",
   "shred": "all",
   "verified": false
 }
@@ -185,6 +209,9 @@ A task is the commit the build step will make. Each one gets:
 Rules for the cut:
 
 - **One reason to change per commit.** If the title needs an "and", it is two tasks.
+- **Cut by behaviour, not by layer.** One task carries one contract through every layer it
+  crosses, with its test at that module's interface. Not an entity task, then a
+  repository task, then a service task.
 - **Every commit leaves the build and the tests green.** Code and the test that proves it
   go in the same commit. A test-only commit is fine when it pins existing behaviour
   before a refactor.
@@ -200,6 +227,9 @@ Rules for the cut:
 A shred is a run of consecutive tasks that ships as one PR. Each gets:
 
 - **Title** — imperative, PR-sized ("Add the shreds checklist endpoint").
+- **Branch** — `<taskId>-S-<n>-<slug>`, the slug being the title in lowercase kebab-case,
+  at most five words: `OB-27-S-2-add-checklist-endpoint`. Fixed once written: a reworded
+  title keeps its branch. The build guard blocks any other form.
 - **Scope** — the files or region it touches. One area of the code, not a vertical
   slice through five.
 - **Ships alone because…** — what makes it mergeable on its own: it is additive, it is
@@ -214,6 +244,10 @@ A shred is a run of consecutive tasks that ships as one PR. Each gets:
   complexity, lean) apply to every shred; mark them task-wide once instead of repeating
   them.
 - **Size** — commits and an estimate of changed lines.
+- **Estimate** — `~<n> min · ~<n>k tokens` for its build, review loop included: its commits
+  times the per-commit rates from `node "$CLAUDE_PROJECT_DIR/.claude/hooks/usage.mjs" history`
+  (`$HOME/...` when installed in `~/.claude`). No history yet: guess, and say so in *Open
+  questions*. `/hyperspace` compares it with what the build consumed.
 
 Rules for the split:
 
@@ -296,6 +330,9 @@ until the user is happy. After every edit, re-check:
 - every requirement lands in exactly one shred, and its test in a task;
 - every exit condition is carried by a shred or marked task-wide;
 - every brittle seam and named risk is carried by a shred or explicitly out of reach;
+- every model, contract, error case and trust seam in *Design* is carried by a shred;
+- every `new` row in the reuse table still names a current requirement;
+- every preserved behaviour is pinned by a test;
 - no task re-opens a rejected option;
 - every task is green on its own;
 - every shred's reviews still match its triggers. A shred that gains a login form gains
@@ -352,6 +389,13 @@ problem, not the task list.>
 <The shape of the change and the seams it touches, with paths. Then one line on why the
 shreds come in this order.>
 
+## Design
+<The reuse table, then **Model**, **Contracts**, **Errors** and **Trust seam** when step 2
+calls for them. Only what the shreds build.>
+
+## Preserved behaviour
+- <what keeps working> — pinned by <existing test, or T-n.m>
+
 ## Decisions
 
 ### D-1 <what was decided>
@@ -367,6 +411,7 @@ shreds come in this order.>
 ## Shreds
 
 ### S-1 <PR title>
+- **Branch** — `<taskId>-S-1-<slug>`
 - **Scope** — <files or region>
 - **Ships alone because** — <what makes it mergeable on its own>
 - **Review focus** — <the seam or risk to read hardest, or none>
@@ -374,6 +419,7 @@ shreds come in this order.>
 - **Exit conditions** — EC-<n>
 - **Reviews** — spec+standards<, security><, ux>
 - **Size** — <n> commits, ~<n> lines
+- **Estimate** — ~<n> min · ~<n>k tokens
 
 1. **T-1.1** `<commit message>` — <files> · covers <R-n / test> · green when `<command>`
 2. **T-1.2** …

@@ -43,28 +43,29 @@ Read from `.factory/<taskId>/`:
 ## 1. Pick the shred
 
 Take `S-n` if given. Otherwise, take the shred whose branch is checked out, if
-`git rev-parse --abbrev-ref HEAD` is `<taskId>/S-n`. Otherwise, ask.
+`git rev-parse --abbrev-ref HEAD` is `<branch>`. Otherwise, ask. `<branch>` is the
+shred's **Branch** field in `plan.md`.
 
-- **The branch must exist** (`git rev-parse --verify <taskId>/S-n`). If it does not,
+- **The branch must exist** (`git rev-parse --verify <branch>`). If it does not,
   point to `/build <taskId> S-n`.
 - **`/build` must have finished it.** The plan's changelog has a `Build, S-n` line. If it
   does not, the build stopped partway: say so, and stop.
 - **A `(no PR)` shred** has no PR to describe. Say so, and stop.
-- **The PR already exists** (`gh pr list --head <taskId>/S-n --state all`). Go on, and
+- **The PR already exists** (`gh pr list --head <branch> --state all`). Go on, and
   say that the author will need to update its description by hand.
 
 **Find the base**, the commit the shred's diff is measured from:
 
-- **The S-(n-1) PR is still open:** `git merge-base <taskId>/S-n <taskId>/S-(n-1)`. The PR
+- **The S-(n-1) PR is still open:** `git merge-base <branch> <S-(n-1) branch>`. The PR
   is stacked on S-(n-1).
-- **Otherwise:** `git merge-base <taskId>/S-n origin/<default-branch>`. Get the default
+- **Otherwise:** `git merge-base <branch> origin/<default-branch>`. Get the default
   branch from `git rev-parse --abbrev-ref origin/HEAD`.
 
 Then read the shred as it was built, from refs, without checking anything out:
 
-- `git log --oneline <base>..<taskId>/S-n`, for the commits;
-- `git diff --stat <base>..<taskId>/S-n`, for the shape of the change;
-- `git diff <base>..<taskId>/S-n`, for the change itself. Read it. The summary and the
+- `git log --oneline <base>..<branch>`, for the commits;
+- `git diff --stat <base>..<branch>`, for the shape of the change;
+- `git diff <base>..<branch>`, for the change itself. Read it. The summary and the
   review list are about the code that exists, not the code the plan expected.
 
 ## 2. Write the three parts
@@ -132,7 +133,7 @@ or replace this shred's section only, and keep every other one exactly as it is.
 > Plan: `.factory/<taskId>/plan.md` · one section per PR, to paste as its description
 
 ## S-2 <PR title, from the plan>
-`OB-27/S-2` → `OB-27/S-1` (stacked until S-1 merges) · 4 commits · EC-3..EC-6 verified · EC-7 open
+`OB-27-S-2-add-checklist-endpoint` → `OB-27-S-1-store-shred-checklist` (stacked until S-1 merges) · 4 commits · EC-3..EC-6 verified · EC-7 open
 
 ### Summary
 <two to four sentences>

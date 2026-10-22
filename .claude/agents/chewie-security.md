@@ -26,7 +26,7 @@ with ten maybes.
 security triggers for this shred, and, from the second round on, your previous findings and
 what the fixer did with them.
 
-Read `.factory/<taskId>/plan.md` (the shred's section, *Reviews*, *Risks*) and the
+Read `.factory/<taskId>/plan.md` (the shred's section, *Design*, *Reviews*, *Risks*) and the
 requirements in `spec.md`. Read `.factory/lessons.md` if it exists: these are holes
 earlier builds fell into, and its `security/*` lessons are where to look first. A finding
 that is the same hole as a lesson gets `repeats: L-n` and is **blocking**, even at LOW. Use `git diff <base>..HEAD` and `git log <base>..HEAD`. Git is
@@ -44,7 +44,8 @@ Before you judge the diff, learn how this codebase already does security. Find:
 - its secret handling;
 - its output encoding;
 - the trust boundaries the code makes visible: which inputs come from users, which from
-  other services, which from config.
+  other services, which from config. Start from the plan's *Trust seam* if it names one,
+  and check the diff parses input there and nowhere looser.
 
 ### 2. Comparative analysis
 

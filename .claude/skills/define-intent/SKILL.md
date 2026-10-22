@@ -43,7 +43,8 @@ and a consumer), dispatch two researchers in parallel, one per area — no more.
 
 Show the user a short digest of what came back: where it lives, how it works today, and
 what the code cannot tell. Keep the researcher's `path:line` citations; the document
-needs them.
+needs them. Open the key ones yourself before the digest rests on them: the researcher
+can be wrong.
 
 The map is a starting point, not a verdict. If the conversation moves to an area the
 researcher did not cover, read it yourself or dispatch another.
@@ -66,12 +67,14 @@ What this step is **not**: comparing solutions, recommending an approach, or ske
 design. If the user drifts there, note the idea as a constraint or an open question and
 bring the conversation back to the problem — choosing the change is the next step's job.
 
-Hold on to two things while you explore, because the document needs them and they are
+Hold on to three things while you explore, because the document needs them and they are
 easy to lose:
 
 - **How you would know it happened** — the reproduction, the failing case, the
   screenshot, the number that is wrong.
 - **What is not the problem** — the tempting adjacent thing you agreed to leave alone.
+- **What users do instead today** — the workaround. The fix must not break it before
+  it replaces it.
 
 ## 3. Capture, when the user says so
 
@@ -114,6 +117,10 @@ that is still true, and replace the rest. The new file supersedes the old one.
 ## How to see it
 <Reproduction steps, the failing input, or the query that shows the wrong number.
 If it cannot be reproduced yet, say that plainly — it is the first unknown.>
+
+## Workaround today
+<What users do instead, and what it costs them. "None" is an answer: it means they are
+stuck.>
 
 ## Is it isolated
 <One place, or a symptom of something broader?>

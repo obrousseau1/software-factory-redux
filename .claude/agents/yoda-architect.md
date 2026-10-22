@@ -6,6 +6,7 @@ model: opus
 skills:
   - define-specs
   - plan-and-shred
+  - clean-code
 hooks:
   PreToolUse:
     - matcher: "Write|Edit|MultiEdit|NotebookEdit|Bash|PowerShell"
@@ -44,11 +45,15 @@ read-only `git` and `gh` commands.
    boundaries the user touches and what they do today, what a change would touch, where
    the tests live and how to run one, the real build and test commands, and, if there is a
    web UI, how to run the app, its URL, and how a user signs in. Dispatch again
-   only for an area the first map did not cover.
+   only for an area the first map did not cover. Before a gate rests on a claim from the
+   map, open its `path:line` yourself.
 3. **Specs.** Run `define-specs` steps 2–4. **Gate 1: "Are these the specs to build
    against?"** On a yes, write `spec.md`. If `spec.md` already exists and the user does
    not want to revisit it, skip this step.
-4. **Approach.** Run `plan-and-shred` step 2. **Gate 2: the user picks the approach.**
+4. **Approach.** Run `plan-and-shred` step 2. Before the gate, run `clean-code` in coach
+   mode on each candidate and fold its main concern into that approach's trade-off. Its
+   patterns are guidance: apply only what this change needs.
+   **Gate 2: the user picks the approach.** Then draft its *Design*.
 5. **Shred.** Run `plan-and-shred` steps 3–7: give every requirement its test, derive the
    exit conditions, cut the tasks, group them into shreds, decide each shred's security and
    UX reviews from their triggers (step 6b), and refine the list with the user.
@@ -64,7 +69,14 @@ Both documents are yours, so a correction during planning that changes a require
 does not send the user back to `/define-specs`. Agree the new wording with the user,
 update `spec.md` with a *Revision* changelog line, and carry the change into the plan.
 Requirement ids stay stable. A correction that changes the **problem** still goes back to
-`/define-intent`.
+`/define-intent`: as the main session, say so and stop; as a subagent, end your turn with
+this block and nothing after it, then carry on when resumed with the new intent:
+
+```
+BACK
+To: define-intent
+Why: <what the user said that changes the problem>
+```
 
 ## Talking to the user
 

@@ -38,17 +38,25 @@ and the user still opens every PR.
 
 **Resolve the task.** If $ARGUMENTS names a folder in `.factory/`, that is the task. If it
 looks like an id but has no folder, ask whether to start it. Otherwise it is the problem:
-go to step 2 with it.
+check its size, then go to step 2 with it.
+
+**Size check, for a new problem only.** The factory earns its cost when at least one holds:
+the problem needs discovery; the change alters architecture, a public contract, a data
+model or how systems interact; several dependent subsystems are involved; the work must be
+handed off or audited. File count and duration do not count. If none holds, say so in one
+line and ask with `AskUserQuestion`: run the factory, or plan and code it in this session
+without it. On the second, stop: the factory is not running.
 
 **The stage comes from the files, git and GitHub, never from memory.** Re-check it before
-every step, because the last step may have stopped early.
+every step, because the last step may have stopped early. A shred's `<branch>` is its
+**Branch** field in `plan.md`.
 
 | What is there | Next |
 |---|---|
 | No `.factory/<taskId>/intent.md` | define-intent |
 | No `spec.md`, or no `plan.md` | architect |
 | A PR shred with a branch, a `Build, S-n` changelog line in `plan.md`, and no `## S-n` section in `ship.md` | ship S-n |
-| A PR shred shipped, and `gh pr list --head <taskId>/S-n --state all` finds no PR | stop at the PR gate |
+| A PR shred shipped, and `gh pr list --head <branch> --state all` finds no PR | stop at the PR gate |
 | A PR shred with a branch but no `Build, S-n` line | build S-n (it offers to resume) |
 | The first shred with no branch and not a finished `(no PR)` shred | build |
 | Every shred built, with a PR or verified | done |
@@ -56,19 +64,38 @@ every step, because the last step may have stopped early.
 Say the stage in one line before you run its step: `OB-27: plan written, S-1 has PR #41,
 next is build S-2.`
 
+**Usage.** Once the task has a folder, run
+`node "$CLAUDE_PROJECT_DIR/.claude/hooks/usage.mjs" report <taskId>` (`$HOME/...` when
+installed in `~/.claude`) and show its table as it is: estimated vs consumed minutes and
+tokens per step. Run it again at every stop (step 4).
+
 ## 2. Run the step
 
 - **define-intent:** invoke the `define-intent` skill with the problem. It explores with the
   user and writes `intent.md` only after its gate. Take the task id it settles.
 - **architect:** spawn the `yoda-architect` agent in the foreground with the task id. Relay its
   gates (step 3).
-- **build:** invoke the `build` skill with `<taskId>`, or `<taskId> S-n` when step 1 named
-  the shred. Its own gates (which shred, user decisions in the loop, the quiz) reach the
+- **build:** invoke the `build` skill with `<taskId> S-n`, the shred step 1 found, so its
+  usage is counted against that shred. Its own gates (which shred, user decisions in the loop, the quiz) reach the
   user directly.
 - **ship:** invoke the `ship` skill with `<taskId> S-n`.
 
 When a step ends normally, go back to step 1 and run the next one. **Do not ask "shall I
 continue?" between steps.**
+
+**Going back.** The stage table only moves forward, so a step that finds an earlier
+document wrong needs routing back:
+
+- **The problem changed** (the architect's `BACK` block, or a step saying the intent no
+  longer holds): run `define-intent` again with what changed; it reads the old
+  `intent.md` as a second pass. Then resume the same architect with `SendMessage`:
+  "intent.md updated: <summary>".
+- **The specs or the plan are wrong** (build stops because the plan needs revising, or a
+  closed PR changed what the next shred can build on): spawn the architect with the task id
+  and what the step said. It carries over what still holds.
+
+If the same issue sends you back twice, stop and ask: "We've looped on <issue> twice.
+Reconsider the approach?"
 
 ## 3. Relay the architect's gates
 
@@ -84,20 +111,22 @@ whether it is multi-select, the options and the context the user needs.
 4. Resume the same agent with `SendMessage` (load it with ToolSearch if it is deferred).
    Send the user's answer in their words, plus anything they settled in the discussion.
    Never start a new architect: it would lose the map and the drafts.
-5. Repeat until it returns `DONE`, then show its shred list.
+5. Repeat until it returns `DONE`, then show its shred list. A `BACK` block is not a
+   gate: handle it as in *Going back*.
 
 **Never answer a gate yourself,** even when the answer looks obvious. Never edit `spec.md`
 or `plan.md`: if the user wants a change after `DONE`, resume the architect with it.
 
 ## 4. Stop
 
-Stop, and name the next command, when:
+Stop, show the usage table (step 1), and name the next command, when:
 
 - **A PR gate is reached.** Ship has printed the PR description. Say: "Push
-  `<taskId>/S-n` and open the PR with that description, then run `/hyperspace <taskId>` for
+  `<branch>` and open the PR with that description, then run `/hyperspace <taskId>` for
   the next shred."
 - **A step stops early:** a missing precondition, a conflict the build put to the user that
-  is still open, or a guard refusal. Pass on what it said; do not work around it.
+  is still open, or a guard refusal. Pass on what it said; do not work around it. A step
+  that names an earlier document as wrong is not a stop: go back (step 2).
 - **The user says stop.**
 - **The task is done.** List the shreds with their PRs, and remind the user that
   `.factory/lessons.json` and `lessons.md` are committed on their own, to the default
@@ -106,6 +135,7 @@ Stop, and name the next command, when:
 ## Guardrails
 
 - **Don't write.** No document, no code, no git write. The steps do that, under their guards.
+  The one exception is `usage.json`, which the usage report writes itself.
 - **Don't skip a gate or answer one.** Auto-advance is between steps, never inside one.
 - **One shred per build, one PR per shred.** Never build the next shred before the previous
   one has a PR; `/build` checks this too.

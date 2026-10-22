@@ -48,6 +48,8 @@ Each skill declares a `PreToolUse` hook in its frontmatter that runs
   (`git push`, `gh pr create`, …). Best effort, not a shell parser
 - `defer` — agent types whose calls this profile leaves to that agent's own guard (the
   hook input's `agent_type`), so `/build`'s guard does not block its own builder
+- `branchPattern` — regex every branch the profile creates must match (`/build`:
+  `<taskId>-S-<n>-<slug>`)
 
 A skill's frontmatter hooks stay active for the rest of the session, so after `/define-intent`
 its guard would still block `/build`'s writes. `step.mjs`, wired in `.claude/settings.json`,
@@ -166,6 +168,28 @@ PRs, so that every later build, yours or a teammate's, learns from them. Never e
 `lessons.json` by hand. If you have to, run `node .claude/hooks/lessons.mjs render`
 afterwards.
 
+### Usage tracking (nothing to install)
+
+`step.mjs` logs each step start to `.factory/usage-log.jsonl`. `usage.mjs` reads Claude Code's
+own transcripts against that log and prints estimated vs consumed time and tokens per step,
+subagents included:
+
+```
+node .claude/hooks/usage.mjs report <taskId>   # table + .factory/<taskId>/usage.json
+node .claude/hooks/usage.mjs history           # past averages, for the plan's estimates
+```
+
+- **Tokens:** input + cache writes + output. Cache reads are left out: they are cheap and
+  would dwarf the rest.
+- **Minutes:** active time. A gap that ends in your prompt is time spent waiting on you, so
+  it is not counted.
+- **Estimates:** each shred's *Estimate* in `plan.md` (its commits times past per-commit
+  rates), and each other step's past average. Fixed the first time they are written.
+
+`/hyperspace` shows the table at the start and at every stop. **Commit** the `usage.json`
+files: Claude Code deletes old transcripts, and the plan step calibrates its estimates from
+them. `usage-log.jsonl` holds local transcript paths; add it to `.gitignore`.
+
 ## Using it
 
 With [Install](#install) done, run the whole task from the main session, on Opus (a
@@ -241,8 +265,9 @@ spawns subagents. The run:
 
 1. **PR gate.** It picks the next shred and checks that the previous one already has a PR.
    It never opens a PR itself: that gate is yours.
-2. **Branch.** It creates `<taskId>/S-n`. The base is the default branch if the previous PR
-   is merged, or `<taskId>/S-(n-1)` (stacked) while that PR is still open.
+2. **Branch.** It creates the shred's `Branch` from `plan.md`, `<taskId>-S-<n>-<slug>`
+   (the guard blocks any other name). The base is the default branch if the previous PR
+   is merged, or `<S-(n-1) branch>` (stacked) while that PR is still open.
 3. **Builder.** It spawns `luke-builder` once. The builder makes one commit per task,
    red-green-refactor under ponytail, then runs `/clean-code audit` and the project's own
    checks.

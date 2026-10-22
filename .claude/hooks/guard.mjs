@@ -9,6 +9,7 @@
 //   shell     — command prefixes Bash/PowerShell may run. ["*"] = anything. [] = no shell.
 //   shellDeny — with shell ["*"], prefixes refused in any segment of the command.
 //   defer     — agent types whose calls this profile leaves to that agent's own guard.
+//   branchPattern — regex every branch this profile creates must match.
 //
 // Exit 0 allows the call; exit 2 blocks it and hands stderr back to Claude.
 // Anything unexpected — unknown profile, unreadable policy, malformed input — blocks:
@@ -28,6 +29,8 @@ const SHELL_METACHARACTERS = /[>|;&`\r\n]|\$\(/;
 const WRITING_OPTIONS = /(^|\s)--output(=|\s|$)/;
 // Where one command ends and the next begins, for shellDeny. Best effort, not a parser.
 const SEGMENT_SEPARATORS = /&&|\|\||[;|&\r\n`]|\$\(/;
+// The new branch's name in git checkout -b|-B, git switch -c|-C|--create, or git branch <name>.
+const BRANCH_CREATION = /^git\s+(?:checkout\s+-[bB]|switch\s+(?:-[cC]|--create)|branch)\s+["']?([^\s"'-][^\s"']*)/;
 
 function block(reason) {
   process.stderr.write(`[guard:${process.argv[2] ?? "?"}] ${reason}\n`);
@@ -51,6 +54,7 @@ function loadProfile(name) {
     shell: profile.shell ?? [],
     shellDeny: profile.shellDeny ?? [],
     defer: profile.defer ?? [],
+    branchPattern: profile.branchPattern && new RegExp(profile.branchPattern),
   };
 }
 
@@ -86,6 +90,10 @@ function checkShell(profile, command) {
       const part = segment.trim().replace(/^[({\s]+/, "");
       const denied = profile.shellDeny.find(prefix => startsWithCommand(part, prefix));
       if (denied) block(`"${denied}" is not allowed in this step.`);
+      const branch = profile.branchPattern && part.match(BRANCH_CREATION)?.[1];
+      if (branch && !profile.branchPattern.test(branch)) {
+        block(`Branch "${branch}" must be <taskId>-S-<n>-<slug> (${profile.branchPattern.source}): use the shred's Branch field in plan.md.`);
+      }
     }
     return;
   }

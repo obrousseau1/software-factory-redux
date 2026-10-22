@@ -55,6 +55,8 @@
         ".factory/*/plan.md"
       ],
       "shell": [
+        "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/usage.mjs\" history",
+        "node \"$HOME/.claude/hooks/usage.mjs\" history",
         "git log",
         "git show",
         "git diff",
@@ -70,6 +72,8 @@
         ".factory/*/plan.md"
       ],
       "shell": [
+        "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/usage.mjs\" history",
+        "node \"$HOME/.claude/hooks/usage.mjs\" history",
         "git log",
         "git show",
         "git diff",
@@ -95,6 +99,7 @@
         "gh pr merge",
         "git reset --hard"
       ],
+      "branchPattern": "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*-S-[0-9]+-[a-z0-9]+(-[a-z0-9]+)*$",
       "defer": [
         "luke-builder",
         "leia-fixer",

@@ -76,10 +76,14 @@ Shreds in OB-27:
   S-4  Update the Help Center (no PR)
 ```
 
+**`<branch>`** is the shred's **Branch** field in `plan.md`. A plan written before that
+field existed has none: derive it as `plan-and-shred` step 6 does, add it to the shred, and
+record it in the changelog. The guard blocks any other name.
+
 A shred's state comes from git and GitHub, never from memory:
 
-- **PR shred:** check the branch with `git branch -a --list "*<taskId>/S-n"`, then the PR
-  with `gh pr list --head <taskId>/S-n --state all --json number,state,url`.
+- **PR shred:** check the branch with `git branch -a --list "*<branch>"`, then the PR
+  with `gh pr list --head <branch> --state all --json number,state,url`.
 - **`(no PR)` shred:** it is done when all the exit conditions it carries are `verified`
   in the plan.
 
@@ -104,11 +108,11 @@ Never rebuild over it.
 **Create the branch.** The base depends on where S-(n-1) stands:
 
 - **S-1, or the S-(n-1) PR is merged.** Run `git fetch`, then
-  `git checkout -b <taskId>/S-n --no-track origin/<default-branch>`. Without `--no-track` the
+  `git checkout -b <branch> --no-track origin/<default-branch>`. Without `--no-track` the
   branch tracks the default branch, and a push lands there instead of opening a PR branch.
-- **The S-(n-1) PR is still open.** Run `git checkout -b <taskId>/S-n <taskId>/S-(n-1)`. This
+- **The S-(n-1) PR is still open.** Run `git checkout -b <branch> <S-(n-1) branch>`. This
   stacks S-n on S-(n-1), because S-n may depend on it. Tell the user that the PR for S-n
-  will target `<taskId>/S-(n-1)` until S-(n-1) merges.
+  will target `<S-(n-1) branch>` until S-(n-1) merges.
 
 Say which base you took. Record **`base`** = `git rev-parse HEAD`. Every diff and the test
 lock are measured from it.

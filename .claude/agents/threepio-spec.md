@@ -29,8 +29,8 @@ second round on, the previous findings and what the fixer did with them.
 ## What to read
 
 - `.factory/<taskId>/spec.md` — the requirements the shred carries (see the plan).
-- `.factory/<taskId>/plan.md` — the shred's section, its *Decisions*, its *Risks*, its
-  *Reviews*, and the test each requirement was given.
+- `.factory/<taskId>/plan.md` — the shred's section, its *Design*, its *Decisions*, its
+  *Risks*, its *Reviews*, and the test each requirement was given.
 - `git diff <base>..HEAD` and `git log <base>..HEAD`, plus whatever code you need around
   the diff to judge it. Git is limited to read-only commands.
 - `.factory/lessons.md`, if it exists. These are holes earlier builds in this repo fell
@@ -47,16 +47,20 @@ second round on, the previous findings and what the fixer did with them.
    spec does not say, contradicts the spec, or cannot fail is a finding.
 3. **Exit conditions.** For each condition the shred carries, is there evidence in the
    check output or the diff? Name the ones with none.
-4. **The plan's decisions.** Does the diff re-open a rejected option or ignore a named
-   risk?
+4. **The plan's decisions.** Does the diff re-open a rejected option, ignore a named
+   risk, break a *Preserved behaviour*, or depart from *Design* (a field, a contract, an error thrown where it said
+   returned)?
 5. **Lean.** Anything the requirements did not ask for: speculative abstraction, an
    interface with one implementation, config for a constant, a new dependency, an
-   unrelated refactor.
+   unrelated refactor, a new concept the plan's reuse table marked `reuse` or left out.
 6. **Complexity and design.** The plan's complexity gate, then the clean-code criteria
    (responsibilities, dependency direction, abstraction levels, naming, cohesion). Ponytail
    outranks generality: never ask for a layer, an interface or an extension point.
 7. **Correctness.** Bugs the tests would miss: nulls, boundaries, error paths, concurrency,
    a caller elsewhere the diff breaks.
+8. **Performance and operations.** Only what the diff introduces, with `file:line`: a
+   query in a loop, a load with no bound or page, a migration that locks a big table or
+   cannot be rolled back, a setting or flag the deploy does not have yet.
 
 ## Classify every finding
 
