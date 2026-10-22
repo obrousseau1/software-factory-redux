@@ -32,8 +32,10 @@ const SEGMENT_SEPARATORS = /&&|\|\||[;|&\r\n`]|\$\(/;
 // The new branch's name in git checkout -b|-B, git switch -c|-C|--create, or git branch <name>.
 const BRANCH_CREATION = /^git\s+(?:checkout\s+-[bB]|switch\s+(?:-[cC]|--create)|branch)\s+["']?([^\s"'-][^\s"']*)/;
 
+let releaseHint = "";
+
 function block(reason) {
-  process.stderr.write(`[guard:${process.argv[2] ?? "?"}] ${reason}\n`);
+  process.stderr.write(`[guard:${process.argv[2] ?? "?"}] ${reason}${releaseHint}\n`);
   process.exit(2);
 }
 
@@ -129,6 +131,8 @@ if (profile.isStep) {
     marker = undefined;
   }
   if (marker?.session_id && marker.session_id === input.session_id && marker.step !== process.argv[2]) process.exit(0);
+  // Said to the user, who decides: Claude ending a step to get past its guard would be a bypass.
+  releaseHint = ` If the ${process.argv[2]} step is over, the user can end it with: ! node "${path.join(path.dirname(policyPath), "step.mjs")}" done`;
 }
 
 if (input.tool_name in FILE_TOOLS) {

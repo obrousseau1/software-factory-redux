@@ -152,6 +152,9 @@ Rules for the writing:
 
 Then tell the user where the file is. Do not commit it — git is the user's.
 
+**End the step:** run `node "$CLAUDE_PROJECT_DIR/.claude/hooks/step.mjs" done` (`$HOME/...`
+when installed in `~/.claude`), so this step's guard stops blocking the work that follows.
+
 This document is read by the later factory steps (specs, planning, wrap-up). It is where
 the task's "summary of the issue" comes from.
 

@@ -10,6 +10,9 @@
 // .factory/.step = { step, session_id }; guard.mjs then enforces only the current step's profile.
 // Calls made inside a subagent never move the step. Always exits 0: it records, it never blocks.
 // It also appends each step start (and /hyperspace's) to .factory/usage-log.jsonl for usage.mjs.
+//
+// `step.mjs done` ends the current step: the marker becomes "done", so every step guard stands
+// down until the next step starts. Each step runs it last; the user runs it after an interrupted one.
 
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -33,6 +36,19 @@ function taskOf(args, factory) {
   const tasks = existsSync(factory) ? readdirSync(factory, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name) : [];
   const words = String(args ?? "").split(/[\s`'"/\\,.:()]+/);
   return words.find(word => tasks.includes(word));
+}
+
+if (process.argv[2] === "done") {
+  const root = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
+  const markerPath = path.join(root, ".factory", ".step");
+  try {
+    const marker = JSON.parse(readFileSync(markerPath, "utf8"));
+    writeFileSync(markerPath, JSON.stringify({ ...marker, step: "done" }));
+    process.stdout.write(`Step "${marker.step}" ended; its guard stands down until the next step.\n`);
+  } catch {
+    process.stdout.write("No step marker; nothing to end.\n");
+  }
+  process.exit(0);
 }
 
 try {

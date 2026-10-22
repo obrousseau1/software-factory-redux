@@ -148,7 +148,9 @@ one does not apply, keep it and say why in its description.
    its scenarios and checked by the test from step 3. Eight requirements yield eight
    conditions here, not one.
 2. **Build pass** — the project's real build command from the map, exiting clean. Name
-   it. Include "no new warnings" only if the project is currently warning-free.
+   it. A comparison with the default branch ("no new warnings") needs its number: you
+   cannot run the build here, so write `baseline: to measure` in the condition, and
+   `/build` measures it on the base before S-1 changes anything.
 3. **Tests pass** — the project's real test command. If the project has no tests, the
    condition is that the one check covering this change's logic runs and passes.
 4. **Complexity is low** — see below.
@@ -194,6 +196,15 @@ named under *Risks and brittle seams*, observable in *Exit conditions*.
 Delete any condition another already implies, any nobody would actually check, and any
 with no way to be verified. Merge near-duplicates. Ten sharp conditions beat thirty
 aspirational ones.
+
+### Check them against what exists
+
+- **The fixtures and tests from the map.** If today's data or a requirement's own scenario
+  already breaks a condition ("no sample gains a type" when R-1 adds one), the condition or
+  the requirement is wrong. Settle which with the user before the plan is written.
+- **Design rules are the owner's.** A condition that rules out a design ("no new
+  interface", "no DI", "no new table") is a decision: ask the user, record it as a `D-n`,
+  and only then write the condition. Never add one on your own.
 
 ## 5. Break the work into tasks
 
@@ -486,6 +497,11 @@ Then replace what no longer holds, and append one changelog line:
 Then tell the user where the file is, show the shreds one line each, and ask which exit
 conditions look wrong: they know the task's real risk better than the plan does. Do not
 commit it: git belongs to the user.
+
+**End the step** once the user has no more corrections: run
+`node "$CLAUDE_PROJECT_DIR/.claude/hooks/step.mjs" done` (`$HOME/...` when installed in
+`~/.claude`), so this step's guard stops blocking the work that follows. The architect agent
+skips this: its guard ends with it.
 
 ## Worked example: "Support other LLM clients"
 

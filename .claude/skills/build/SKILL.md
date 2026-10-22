@@ -117,6 +117,11 @@ Never rebuild over it.
 Say which base you took. Record **`base`** = `git rev-parse HEAD`. Every diff and the test
 lock are measured from it.
 
+**Measure the baselines** before anything changes. For each condition marked
+`baseline: to measure` (a warning count, a test count), run its command on the base now and
+write the number into the condition in `plan.md`, with a changelog line. A later shred reuses
+the recorded number.
+
 **Name the exit conditions this shred carries**, by id, before anything is built. The
 baseline conditions (`"shred": "all"`) apply to every shred: name them once as task-wide. A
 shred that carries no condition cannot be called done: ask which conditions it should carry.
@@ -206,17 +211,21 @@ the pages, and the names of the sign-in env vars.
    `repeats: L-n` is **blocking**, whatever its severity. Keep every finding (fixed,
    accepted, or still open) for step 6b.
 4. **Exit the loop** when every reviewer that ran says *ready*, no blocking `fix` finding is
-   left, and every check from step 4.1 is green.
-5. **Lock the tests.** Write `.factory/build-lock.json` as
+   left, and every check from step 4.1 is green. If `minor` `fix` findings are left, ask
+   once, multi-select, which ones the fixer should apply. For the ones picked, run 6–8 once
+   more, then the checks from 4.1. No new review round unless a check fails.
+5. **Settle the `test-change` findings first** (see below), in this round, before the lock.
+   A guard test paired with a `fix` (`guards: …`) is built now and must fail, so the fixer
+   makes it pass in the same round.
+6. **Lock the tests.** Write `.factory/build-lock.json` as
    `{ "base": "<git rev-parse HEAD>", "taskId": "<taskId>", "shred": "S-n" }`. The tests as
    they stand now are the contract.
-6. **Spawn one `leia-fixer`** in the foreground with all the `fix` findings, from every reviewer:
+7. **Spawn one `leia-fixer`** in the foreground with all the `fix` findings, from every reviewer:
    blocking ones first, then minor. Give it the check output, the base and the commands.
-7. **Verify the lock yourself:** `node "$CLAUDE_PROJECT_DIR/.claude/hooks/test-lock.mjs" verify`.
+8. **Verify the lock yourself:** `node "$CLAUDE_PROJECT_DIR/.claude/hooks/test-lock.mjs" verify`.
    The fixer's Stop hook already ran it, but your own run is the one you can vouch for. If
    it blocks, stop the loop, show the user the paths, and do not continue until they decide.
-8. Set aside the `test-change` findings for the user (see below), and every `out-of-scope`
-   finding for step 6.
+9. Set aside every `out-of-scope` finding for step 6.
 
 **After round 3, if a blocking finding is still open, stop.** Report what is still open,
 which reviewer raised it, and what the fixer tried. A fourth round on the same finding is the
@@ -235,11 +244,12 @@ Typical cases:
 - a missing end-to-end test for a broken UX scenario.
 
 For each finding, show the test (or say that it is missing), what it asserts, what the spec
-says, and the reasoning of whoever raised it. Then ask:
+says, and the reasoning of whoever raised it. Show a guard test next to the `fix` it guards.
+Ask about all of them in one go:
 
 - **Change or add the test.** Spawn the `luke-builder` in test-correction mode with only the
   tests the user agreed to, and what each must assert. This is the only path to a test edit
-  after the first build. Then run one more review round. It does not count toward the cap.
+  after the first build. The lock and the fixer then follow in the same round.
 - **The test stands.** The finding becomes a `fix` for the next fixer round, marked "the
   test is the contract".
 - **Defer.** Leave the test as it is, record the finding in the plan's changelog, and keep
@@ -336,8 +346,7 @@ repo-wide file the next builder has to read. Do this however the loop ended.
 1. Write the findings as a JSON array to `.factory/lessons-inbox.json`.
 2. Run `node "$CLAUDE_PROJECT_DIR/.claude/hooks/lessons.mjs" record .factory/lessons-inbox.json`.
    It removes duplicates inside the batch and against the file, never counts the same
-   occurrence twice, rewrites `lessons.json`, and re-renders `lessons.md`.
-3. Delete the inbox.
+   occurrence twice, rewrites `lessons.json`, re-renders `lessons.md`, and deletes the inbox.
 
 Quote the script's output line (`created L-7 · +1 L-3 (seen 3×)`) in step 6's changelog line
 and in the final report. If the script refuses (an unknown id, a field missing), fix the inbox
@@ -357,6 +366,8 @@ End with:
   the branch and open the PR when you're happy with it. `/build <taskId>` builds the next
   shred once that PR exists."**
 
+Then end the step: run `node "$CLAUDE_PROJECT_DIR/.claude/hooks/step.mjs" done` (`$HOME/...`
+when installed in `~/.claude`), so this step's guard stops blocking the work that follows.
 Then stop.
 
 ## Guardrails
@@ -394,3 +405,5 @@ Then stop.
 | A reviewer the plan selected now looks unnecessary | Run it anyway. Opting out was the user's call at the plan. |
 | The builder is stuck on "Read .factory/lessons.md in full" | That is the lessons gate working. Tell it to read the file with one `Read`, no offset or limit. |
 | `lessons.mjs record` refuses the inbox | Fix the field it names, or the lesson id it does not know, and run it again. Nothing was written. |
+| After a resume, the build fails with null bytes or missing metadata (`CS1056 '\0'`, `XAFLT7009`) | A session that ended mid-build left zeroed generated files in `obj`/`bin`, and `dotnet clean` keeps them. Delete the shred's `obj` and `bin` folders, then build again. |
+| A step's guard still blocks after the step ended | The step did not run `step.mjs done`. The user ends it with `! node "<hooks>/step.mjs" done`; never invoke another step just to move the guard. |

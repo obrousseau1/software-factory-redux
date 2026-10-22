@@ -91,7 +91,11 @@ Cover:
 - the happy path;
 - the obvious failure paths;
 - the edge cases worth thinking about — boundaries, empty and huge inputs, retries,
-  concurrency, permissions, time zones, whatever this change can actually hit.
+  concurrency, permissions, time zones, whatever this change can actually hit;
+- **leaving a mode or screen** — when the user switches away and back, what resets and what
+  persists;
+- **defaults** — what an untouched value means: a choice the user made, or no choice yet.
+  If the intent does not say, it is an open question, not the builder's call.
 
 ### No solution
 
@@ -164,6 +168,9 @@ be revised with `/plan-and-shred`.
 
 Then tell the user where the file is and point to `/plan-and-shred <taskId>` as the next
 step. Do not commit it — git is the user's.
+
+**End the step:** run `node "$CLAUDE_PROJECT_DIR/.claude/hooks/step.mjs" done` (`$HOME/...`
+when installed in `~/.claude`), so this step's guard stops blocking the work that follows.
 
 ## Examples
 

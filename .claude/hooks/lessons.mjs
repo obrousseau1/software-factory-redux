@@ -14,9 +14,10 @@
 // (a null lesson whose normalised rule equals an existing one), and per occurrence (the same
 // taskId + shred + at is never counted twice, so a retried run is a no-op).
 //
-// Exit 0 on success; exit 2 with the reason otherwise — nothing is written on a failure.
+// Exit 0 on success, after deleting the inbox (no step's guard may rm it); exit 2 with the
+// reason otherwise — nothing is written and the inbox stays, on a failure.
 
-import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const root = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
@@ -144,6 +145,7 @@ function record(inboxArg) {
 
   writeAtomically(jsonPath, `${JSON.stringify(data, null, 2)}\n`);
   writeAtomically(mdPath, render(data));
+  rmSync(path.resolve(root, inboxArg));
 
   const summary = [
     ...created.map(id => `created ${id}`),

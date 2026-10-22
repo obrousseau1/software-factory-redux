@@ -4,6 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -195,3 +196,27 @@ test("block: no profile argument", () => {
   });
   assert.equal(result.status, 2, result.stderr);
 });
+
+// Every hook command a skill or agent tells Claude to run must pass that file's own guard, in
+// both install modes: the project's .claude/hooks and ~/.claude/hooks. An agent also answers for
+// the skills it preloads.
+const claudeDir = path.join(root, ".claude");
+const read = file => readFileSync(file, "utf8");
+const files = [
+  ...readdirSync(path.join(claudeDir, "skills")).map(name => path.join(claudeDir, "skills", name, "SKILL.md")),
+  ...readdirSync(path.join(claudeDir, "agents")).map(name => path.join(claudeDir, "agents", name)),
+];
+for (const file of files) {
+  const text = read(file);
+  const profile = text.match(/hooks\/guard\.mjs" ([\w-]+)/)?.[1];
+  if (!profile) continue;
+  const preloaded = [...(text.match(/^skills:\n((?:\s+- .+\n)+)/m)?.[1].matchAll(/- (\S+)/g) ?? [])].map(m => m[1]);
+  const own = name => existsSync(path.join(claudeDir, "skills", name, "SKILL.md"));
+  const bodies = [text, ...preloaded.filter(own).map(name => read(path.join(claudeDir, "skills", name, "SKILL.md")))];
+  const commands = new Set(bodies.flatMap(body => [...body.matchAll(/`(node "\$CLAUDE_PROJECT_DIR\/\.claude\/hooks\/[^`]+)`/g)].map(m => m[1].replace(/<[^>]+>/g, "x"))));
+  for (const command of commands) {
+    for (const form of [command, command.replace("$CLAUDE_PROJECT_DIR/.claude/hooks/", "$HOME/.claude/hooks/")]) {
+      test(`allow: ${path.basename(path.dirname(file)) === "agents" ? path.basename(file) : path.basename(path.dirname(file))} runs ${form}`, () => expectVerdict("allow", profile, bash(form)));
+    }
+  }
+}

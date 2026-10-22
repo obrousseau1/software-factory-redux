@@ -58,6 +58,12 @@ records in `.factory/.step` which step the main session invoked last (a skill, o
 marker, or one from another session, and every guard enforces as before. Agent profiles
 (builder, fixer, reviewer) ignore the marker.
 
+Each step ends by running `step.mjs done`, which sets the marker to `done`: every step guard
+stands down, so PR fixes and other work after a step are not blocked. If a step was
+interrupted and its guard still blocks, end it yourself with
+`! node "$HOME/.claude/hooks/step.mjs" done` (or the project's `.claude/hooks/`). Claude must
+not do this on its own: ending a step to get past its guard is a bypass.
+
 To add a step: add its profile to `policy.json`, add its name to `steps`, and copy the `hooks:`
 block from `define-intent/SKILL.md` with the new profile name. An unknown profile blocks
 everything.

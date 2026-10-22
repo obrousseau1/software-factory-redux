@@ -69,6 +69,10 @@ second round on, the previous findings and what the fixer did with them.
 - **`test-change`** — a test must be added or changed: it is missing, asserts behaviour the
   spec does not ask for, contradicts the spec, or cannot fail. **Never class a test change as
   `fix`**: the fixer cannot touch tests. These go to the user.
+  **Pair a fix with its guard test.** When a `fix` changes behaviour no existing test pins
+  (a bug, a regression), raise the `test-change` for the test that would have caught it in
+  the same round, say what it must assert, and link the two (`guards: <fix finding>`). The
+  user then approves both at once, instead of paying a round for each.
 - **`out-of-scope`** — real, but it belongs to another shred or to no shred. It goes in
   the plan's changelog, not in this diff.
 

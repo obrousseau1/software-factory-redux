@@ -72,6 +72,19 @@ test("a call made inside a subagent leaves the marker alone", () => {
   assert.equal(marker().step, "build");
 });
 
+test("done ends the step: its guard stands down", () => {
+  setMarker("ship");
+  assert.equal(guard("ship", write("src/x.cs")), "block");
+  assert.equal(spawn("step.mjs", ["done"], {}).status, 0);
+  assert.deepEqual(marker(), { step: "done", session_id: "s-1" });
+  assert.equal(guard("ship", write("src/x.cs")), "allow");
+});
+
+test("a guard's block tells the user how to end its step", () => {
+  setMarker("ship");
+  assert.match(spawn("guard.mjs", ["ship"], write("src/x.cs")).stderr, /step\.mjs" done/);
+});
+
 // step.mjs: the usage log
 
 const logged = () => readFileSync(path.join(project, ".factory", "usage-log.jsonl"), "utf8").trim().split("\n").map(line => JSON.parse(line));

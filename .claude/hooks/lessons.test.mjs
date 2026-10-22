@@ -99,6 +99,12 @@ test("a finding without a rule is refused", () => {
   const { status } = record([finding({ rule: "" })]);
   assert.equal(status, 2);
   assert.equal(existsSync(path.join(project, ".factory", "lessons.json")), false);
+  assert.equal(existsSync(path.join(project, ".factory", "inbox.json")), true, "a refused inbox stays to be fixed");
+});
+
+test("a recorded inbox is deleted", () => {
+  assert.equal(record([finding()]).status, 0);
+  assert.equal(existsSync(path.join(project, ".factory", "inbox.json")), false);
 });
 
 test("renders the most frequent lesson first", () => {

@@ -208,8 +208,8 @@ lessons." and move on.
 
 **Record** the kept ones the way `/build` does: write the JSON array to
 `.factory/lessons-inbox.json`, run
-`node "$CLAUDE_PROJECT_DIR/.claude/hooks/lessons.mjs" record .factory/lessons-inbox.json`,
-then delete the inbox. Quote the script's output line in the hand-off. If the script
+`node "$CLAUDE_PROJECT_DIR/.claude/hooks/lessons.mjs" record .factory/lessons-inbox.json`.
+It deletes the inbox once recorded. Quote the script's output line in the hand-off. If the script
 refuses, fix the field it names and run it again.
 
 ### 4b. Learnings for future work
@@ -244,8 +244,10 @@ Print the section you wrote, then end with:
 - **"Push the branch and open the PR with this section as its description. The PR
   targets `<base branch>`."**
 
-Then stop. Do not commit `ship.md`: `.factory/` is the user's to commit, and it must not
-ride along in the shred's PR.
+Then end the step: run `node "$CLAUDE_PROJECT_DIR/.claude/hooks/step.mjs" done` (`$HOME/...`
+when installed in `~/.claude`), so this step's guard stops blocking the work that follows (PR
+comments, fixes). Then stop. Do not commit `ship.md`: `.factory/` is the user's to commit,
+and it must not ride along in the shred's PR.
 
 ## Guardrails
 

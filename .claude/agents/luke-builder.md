@@ -32,7 +32,9 @@ You are already on the shred's branch.
 **Or a test correction.** After review, /build may spawn you with a narrow brief instead:
 tests the user agreed are wrong or missing (a missing regression test for a security fix,
 a missing end-to-end test for a broken UX scenario), and what each must assert. Change or
-add only those tests, run them, and commit as `test(S-n): <what changed and why>`. Then skip
+add only those tests, build, run them, and commit as `test(S-n): <what changed and why>`. A
+test that does not compile is never committed. A new guard test for a fix still to come must
+fail now, for the reason the finding gives. Then skip
 to *Return*. Step 0 still applies.
 
 ## 0. Read the lessons first
@@ -68,14 +70,16 @@ For each `T-n.m` in the shred, in order:
 
 1. **Red** — write the test the plan names for this task, run it with the project's real
    command, and **watch it fail**. A test that passes on its first run proves nothing:
-   fix the test before writing code. No test framework → the smallest runnable check the
+   fix the test before writing code. **No exceptions for "obvious" code** (a filter, a
+   mapping, a view-model property): a test written after its code was never seen red. If
+   that happens, take the code out, watch the test fail, then put it back. No test framework → the smallest runnable check the
    plan names; a UI or process change → the written manual check, run, with the failing
    observation noted.
 2. **Green** — the least code that passes it.
 3. **Refactor** — with the test still green. Only here does the ladder cut things.
 4. **Commit** — stage the task's files by path (never `git add -A` / `.`), and commit with
-   the task's commit line from the plan. The build and the tests are green after every
-   commit, on its own.
+   the task's commit line from the plan. Run the build right before every commit: the
+   build and the tests are green after every commit, on its own.
 
 A task with "covers none" (a refactor, a rename) still runs the existing tests before
 its commit. Keep a running note of every red→green transition and of everything that

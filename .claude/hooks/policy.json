@@ -27,6 +27,8 @@
         ".factory/*/intent.md"
       ],
       "shell": [
+        "node \"$HOME/.claude/hooks/step.mjs\" done",
+        "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/step.mjs\" done",
         "git log",
         "git show",
         "git diff",
@@ -41,6 +43,8 @@
         ".factory/*/spec.md"
       ],
       "shell": [
+        "node \"$HOME/.claude/hooks/step.mjs\" done",
+        "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/step.mjs\" done",
         "git log",
         "git show",
         "git diff",
@@ -55,6 +59,8 @@
         ".factory/*/plan.md"
       ],
       "shell": [
+        "node \"$HOME/.claude/hooks/step.mjs\" done",
+        "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/step.mjs\" done",
         "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/usage.mjs\" history",
         "node \"$HOME/.claude/hooks/usage.mjs\" history",
         "git log",
@@ -72,6 +78,8 @@
         ".factory/*/plan.md"
       ],
       "shell": [
+        "node \"$HOME/.claude/hooks/step.mjs\" done",
+        "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/step.mjs\" done",
         "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/usage.mjs\" history",
         "node \"$HOME/.claude/hooks/usage.mjs\" history",
         "git log",
@@ -114,6 +122,8 @@
         ".factory/lessons-inbox.json"
       ],
       "shell": [
+        "node \"$HOME/.claude/hooks/step.mjs\" done",
+        "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/step.mjs\" done",
         "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/lessons.mjs\" record",
         "node \"$HOME/.claude/hooks/lessons.mjs\" record",
         "git log",
