@@ -120,13 +120,11 @@ opens the PR.
    winget install GitHub.cli        # or: brew install gh
    gh auth login
    ```
-2. **The `ponytail` and `no-numb` plugins.** The builder and the fixer run under
-   `ponytail:ponytail`, and `/build` ends with `no-numb:quiz-me`. `/build` stops if either is
-   missing. In Claude Code:
+2. **The `ponytail` plugin.** The builder and the fixer run under `ponytail:ponytail`.
+   `/build` stops if it is missing. In Claude Code:
    ```
    /plugin marketplace add <owner>/<repo>
    /plugin install ponytail@<marketplace>
-   /plugin install no-numb@<marketplace>
    ```
    Take `<owner>/<repo>` and `<marketplace>` from a machine where they are already
    installed: run `/plugin` there, or look in `~/.claude/plugins/known_marketplaces.json`.
@@ -281,7 +279,7 @@ spawns subagents. The run:
    round 2 on, only the threepio-spec and the reviewers that still had blocking findings
    run again.
 5. **Wrap-up.** It verifies the exit conditions and corrects `plan.md` with a changelog line.
-   It then runs `no-numb:quiz-me` and tells you to push and open the PR.
+   It then tells you to push and open the PR.
 
 The fixer's tests are locked twice. Its guard refuses file writes that match `testGlobs`.
 Before each fixer spawn, `/build` writes `.factory/build-lock.json` with the current commit.

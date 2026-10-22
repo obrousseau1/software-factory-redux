@@ -76,7 +76,7 @@ tokens per step. Run it again at every stop (step 4).
 - **architect:** spawn the `yoda-architect` agent in the foreground with the task id. Relay its
   gates (step 3).
 - **build:** invoke the `build` skill with `<taskId> S-n`, the shred step 1 found, so its
-  usage is counted against that shred. Its own gates (which shred, user decisions in the loop, the quiz) reach the
+  usage is counted against that shred. Its own gates (which shred, user decisions in the loop) reach the
   user directly.
 - **ship:** invoke the `ship` skill with `<taskId> S-n`.
 

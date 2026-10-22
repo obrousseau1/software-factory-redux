@@ -36,9 +36,9 @@ it, and keep the plan true. The agents, each with its own guard:
 
 - **Run in the main session.** Subagents cannot spawn subagents. If you are a subagent,
   say that `/build` runs from the main session, and stop.
-- **Plugins.** The builder runs under `ponytail:ponytail` and this skill ends with
-  `no-numb:quiz-me`. If either is missing from your available skills, stop and say which,
-  with: `/plugin marketplace add <owner>/<repo>`, then `/plugin install <name>@<marketplace>`.
+- **Plugin.** The builder runs under `ponytail:ponytail`. If it is missing from your
+  available skills, stop and say so, with: `/plugin marketplace add <owner>/<repo>`, then
+  `/plugin install ponytail@<marketplace>`.
   `clean-code` ships in this repo's `.claude/skills/`.
 - **A git repo, clean apart from `.factory/`.** Run `git status --porcelain`. Changes outside
   `.factory/` belong to the user: stop and ask them to commit or stash. Do not do it for them.
@@ -343,12 +343,7 @@ Quote the script's output line (`created L-7 · +1 L-3 (seen 3×)`) in step 6's 
 and in the final report. If the script refuses (an unknown id, a field missing), fix the inbox
 and run it again. Never edit `lessons.json` by hand.
 
-## 7. Ownership check
-
-Run `no-numb:quiz-me` on what this shred built. Hand off to it and let it run. Do not
-summarise instead, and do not write your own quiz.
-
-## 8. Stop at the branch
+## 7. Stop at the branch
 
 End with:
 
